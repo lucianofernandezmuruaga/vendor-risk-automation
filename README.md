@@ -24,9 +24,11 @@ This project automates the vendor intake process by utilizing Generative AI (Goo
 - `/docs`: Technical write-up and design decisions.
 
 ## ⚙️ Setup & Installation
-1. Import the `.json` file from `/n8n-blueprints` into your n8n instance.
-2. Configure your credentials for Google Gemini, Jira, Slack, and Gmail.
-3. Use Postman payloads to trigger the Webhook.
+1. **Import Workflow:** Import the `.json` file from `/n8n-blueprints` into your n8n instance.
+2. **Credentials:** Configure your credentials for Google Gemini, Jira, Slack, and Gmail nodes.
+3. **Google Sheets Localization:** - The workflow uses the `=HIPERVINCULO()` formula (Spanish/European localization). 
+   - **Important:** If your Google Sheets is set to English/US, please update the formula in the Google Sheets nodes to `=HYPERLINK()` and replace semicolons (`;`) with commas (`,`).
+4. **Trigger:** Use the Postman payloads provided in the section below to test the different logic branches.
 
 ## 🧪 Testing the Workflow
 To trigger the automation, send a **POST** request to your n8n Webhook URL with the following JSON payloads:
