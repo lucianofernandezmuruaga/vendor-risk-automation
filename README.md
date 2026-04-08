@@ -12,7 +12,8 @@ This project automates the vendor intake process by utilizing Generative AI (Goo
 ## 🧩 Key Features
 - **Intelligent Risk Tiering:** Automated classification (High, Medium, Low) based on contract value and data access scope.
 - **Resilient Error Handling:** Built-in "Fail-Safe" logic to handle nonsensical data or AI service outages without breaking the workflow.
-- **Dynamic Action Routing:** - **High Risk:** Creates Jira tickets and sends urgent Slack alerts.
+- **Dynamic Action Routing:**
+  - **High Risk:** Creates Jira tickets and sends urgent Slack alerts.
   - **Medium Risk:** Creates Jira tickets and logs data.
   - **Low Risk:** Sends approval emails and updates the Audit Log.
 - **Full Traceability:** Automatic linking between the Audit Log (Sheets) and the technical tickets (Jira).
