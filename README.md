@@ -29,6 +29,7 @@ This project automates the vendor intake process by utilizing Generative AI (Goo
 3. **Google Sheets Localization:** - The workflow uses the `=HIPERVINCULO()` formula (Spanish/European localization). 
    - **Important:** If your Google Sheets is set to English/US, please update the formula in the Google Sheets nodes to `=HYPERLINK()` and replace semicolons (`;`) with commas (`,`).
 4. **Trigger:** Use the Postman payloads provided in the section below to test the different logic branches.
+5. **Domain Configuration:** Update the placeholders `your-domain.atlassian.net` in the **Slack** and **Google Sheets** nodes with your actual Atlassian instance URL to ensure the ticket links work correctly.
 
 ## 🧪 Testing the Workflow
 To trigger the automation, send a **POST** request to your n8n Webhook URL with the following JSON payloads:
