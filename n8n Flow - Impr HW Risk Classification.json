@@ -1,0 +1,1145 @@
+{
+  "name": "Impr HW Risk Classification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vendor-intake",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -640,
+        0
+      ],
+      "id": "27709594-a87e-42fd-8aa6-813a4bc08f0c",
+      "name": "Webhook",
+      "webhookId": "ca9a23cc-3e5f-42e7-957c-398c62fccc3c"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ ($json.risk_tier || \"error\").toLowerCase() }}",
+                    "rightValue": "high",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "44ccbdba-3db1-4f68-b7eb-fbe85475678f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e73fa3b8-6ac4-448c-8340-f9951792d112",
+                    "leftValue": "={{ ($json.risk_tier || \"error\").toLowerCase() }}",
+                    "rightValue": "medium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7e0bb780-6e39-4d72-b5f4-4dd1a3350a82",
+                    "leftValue": "={{ ($json.risk_tier || \"error\").toLowerCase() }}",
+                    "rightValue": "low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -32
+      ],
+      "id": "cadb0c6a-a12f-4476-b30f-97bc61c8e749",
+      "name": "Switch",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AR57ETFJP",
+          "mode": "id"
+        },
+        "text": "=🚨 *HIGH RISK VENDOR DETECTED* 🚨\n\n*Vendor:* {{ $('Webhook').item.json.body.vendor_name }}\n*Tier:* {{ $('Switch').item.json.risk_tier.toUpperCase() }}\n\n*Action Required:* A manual security review is mandatory for this provider. \nPlease check the details in <https://lucianofernandezmuruaga.atlassian.net/browse/{{ $json.key }}|this ticket>.\n\n*Audit Trail:* If you want to see all requests, check <https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI|this link>.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        912,
+        -208
+      ],
+      "id": "33e03da4-fdd6-4331-9c6e-256ea4ef5a95",
+      "name": "Notify Channel",
+      "webhookId": "f8154ed8-aaa4-42a2-ae5c-2dac070b435e",
+      "retryOnFail": true,
+      "credentials": {
+        "slackApi": {
+          "id": "aFjnt0bkeTUviuot",
+          "name": "Slack Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Audit Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.format('MM/dd/yyyy HH:mm') }}",
+            "Vendor Name": "={{ $('Webhook').item.json.body.vendor_name }}",
+            "Risk Tier": "={{ $('Switch').item.json.risk_tier }}",
+            "AI Reasoning Summary": "={{ $('Switch').item.json.justification }}",
+            "Review Steps": "={{ $('Switch').item.json.review_steps }}",
+            "Suggested Scope & Concerns": "={{ $('Switch').item.json.suggested_scope }} | Concerns: {{ $('Switch').item.json.concerns }}",
+            "Actions Triggered": "Jira Ticket Created & Slack Alert Sent",
+            "Jira Ticket": "==HIPERVINCULO(\"https://lucianofernandezmuruaga.atlassian.net/browse/{{ $('Create High Risk Issue').item.json.key }}\"; \"Ticket Link\")"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor Name",
+              "displayName": "Vendor Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Risk Tier",
+              "displayName": "Risk Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Reasoning Summary",
+              "displayName": "AI Reasoning Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Review Steps",
+              "displayName": "Review Steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suggested Scope & Concerns",
+              "displayName": "Suggested Scope & Concerns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actions Triggered",
+              "displayName": "Actions Triggered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jira Ticket",
+              "displayName": "Jira Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        -208
+      ],
+      "id": "a9f3d9e7-1b4f-429d-8aab-a43c09565ea6",
+      "name": "Complete High Risk Data",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5kb8LF0DrtGolMa8",
+          "name": "Google Sheets Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Audit Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.format('MM/dd/yyyy HH:mm') }}",
+            "Vendor Name": "={{ $('Webhook').item.json.body.vendor_name }}",
+            "Risk Tier": "={{ $('Switch').item.json.risk_tier }}",
+            "AI Reasoning Summary": "={{ $('Switch').item.json.justification }}",
+            "Review Steps": "={{ $('Switch').item.json.review_steps }}",
+            "Suggested Scope & Concerns": "={{ $('Switch').item.json.suggested_scope }} | Concerns: {{ $('Switch').item.json.concerns }}",
+            "Actions Triggered": "Pending Manual Review (Medium Risk)",
+            "Jira Ticket": "==HIPERVINCULO(\"https://lucianofernandezmuruaga.atlassian.net/browse/{{ $('Create Middle Risk Issue').item.json.key }}\"; \"Ticket Link\")"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor Name",
+              "displayName": "Vendor Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Risk Tier",
+              "displayName": "Risk Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Reasoning Summary",
+              "displayName": "AI Reasoning Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Review Steps",
+              "displayName": "Review Steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suggested Scope & Concerns",
+              "displayName": "Suggested Scope & Concerns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actions Triggered",
+              "displayName": "Actions Triggered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jira Ticket",
+              "displayName": "Jira Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        -32
+      ],
+      "id": "144382e9-7ff9-4003-80eb-71f7b302ca27",
+      "name": "Complete Medium Risk Data",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5kb8LF0DrtGolMa8",
+          "name": "Google Sheets Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Audit Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.format('MM/dd/yyyy HH:mm') }}",
+            "Vendor Name": "={{ $('Webhook').item.json.body.vendor_name }}",
+            "Risk Tier": "={{ $('Switch').item.json.risk_tier }}",
+            "AI Reasoning Summary": "={{ $('Switch').item.json.justification }}",
+            "Review Steps": "={{ $('Switch').item.json.review_steps }}",
+            "Suggested Scope & Concerns": "={{ $('Switch').item.json.suggested_scope }} | Concerns: {{ $('Switch').item.json.concerns }}",
+            "Actions Triggered": "Auto-approved & Vendor Setup Email Sent",
+            "Jira Ticket": "-"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor Name",
+              "displayName": "Vendor Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Risk Tier",
+              "displayName": "Risk Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Reasoning Summary",
+              "displayName": "AI Reasoning Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Review Steps",
+              "displayName": "Review Steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suggested Scope & Concerns",
+              "displayName": "Suggested Scope & Concerns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actions Triggered",
+              "displayName": "Actions Triggered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jira Ticket",
+              "displayName": "Jira Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        144
+      ],
+      "id": "512bd1b2-1aba-4649-b188-08b597f56253",
+      "name": "Complete Low Risk Data",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5kb8LF0DrtGolMa8",
+          "name": "Google Sheets Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1845497489,
+          "mode": "list",
+          "cachedResultName": "Aut Approved Vendors",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI/edit#gid=1845497489"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Vendor Name": "={{ $('Webhook').item.json.body.vendor_name }}",
+            "Approval Date": "={{ $now.format('MM/dd/yyyy HH:mm') }}",
+            "Category": "={{ $('Webhook').item.json.body.category }}",
+            "Contact e-mail": "={{ $('Webhook').item.json.body.vendor_email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Approval Date",
+              "displayName": "Approval Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Vendor Name",
+              "displayName": "Vendor Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Contact e-mail",
+              "displayName": "Contact e-mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        144
+      ],
+      "id": "4b2ce3c7-9698-4cc9-a586-aca378854600",
+      "name": "Complete Aut Approved Data",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5kb8LF0DrtGolMa8",
+          "name": "Google Sheets Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.vendor_email }}",
+        "subject": "=Vendor Onboarding Approved: {{ $('Webhook').item.json.body.vendor_name }}",
+        "message": "=<p>Dear <strong>{{ $('Webhook').item.json.body.vendor_name }}</strong> Team,</p>\n\n<p>We are pleased to inform you that your initial risk assessment has been completed successfully. Your company has been <strong>automatically approved</strong> as a low-risk provider for our organization.</p>\n\n<p><strong>Next Steps:</strong><br>\nOur procurement team will contact you shortly to finalize the service agreement and payment details.</p>\n\n<p>Welcome aboard!<br>\n<em>Automated Procurement System</em></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        144
+      ],
+      "id": "c42398b0-3452-48d7-9315-a701601a624e",
+      "name": "Send a message",
+      "webhookId": "447b87ce-0914-40d6-a408-4b5fdedee0fc",
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "IaUy6l4jNlzKZGAk",
+          "name": "Gmail Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        208
+      ],
+      "id": "f37150eb-fab4-4e16-92e6-95713c5931fc",
+      "name": "Google Gemini Chat Model1",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RcqTIMl8veo6Xi9Q",
+          "name": "Google Gemini(PaLM) Api Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"risk_tier\": { \"type\": \"string\" },\n    \"justification\": { \"type\": \"string\" },\n    \"review_steps\": { \"type\": \"string\" },\n    \"suggested_scope\": { \"type\": \"string\" },\n    \"concerns\": { \"type\": \"string\" }\n  }\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        208
+      ],
+      "id": "37f1a2c1-ce5a-41bd-9fa5-2535882d903c",
+      "name": "Structured Output Parser",
+      "retryOnFail": false,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        416
+      ],
+      "id": "ec4a7703-76f6-4ac4-b7da-1f79533e6e4f",
+      "name": "Google Gemini Chat Model2",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RcqTIMl8veo6Xi9Q",
+          "name": "Google Gemini(PaLM) Api Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46b1f9f7-5dd7-4607-a797-276413ecc23c",
+              "name": "risk_tier",
+              "value": "={{ $json.output.properties.risk_tier.type }}",
+              "type": "string"
+            },
+            {
+              "id": "9df0612c-58d1-455b-aed6-d574a076a562",
+              "name": "justification",
+              "value": "={{ $json.output.properties.justification.type }}",
+              "type": "string"
+            },
+            {
+              "id": "445dc5a7-1857-4b26-bbb0-1fff4d6b6aff",
+              "name": "review_steps",
+              "value": "={{ $json.output.properties.review_steps.type }}",
+              "type": "string"
+            },
+            {
+              "id": "2864ccb7-0fb0-4beb-ab13-2863329c014b",
+              "name": "suggested_scope",
+              "value": "={{ $json.output.properties.suggested_scope.type }}",
+              "type": "string"
+            },
+            {
+              "id": "a70cd5a9-370d-46d9-9b01-42db602dfb3f",
+              "name": "concerns",
+              "value": "={{ $json.output.properties.concerns.type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        0
+      ],
+      "id": "b7ec0da3-1063-46a9-9706-7e9d2a133bfb",
+      "name": "Set AI output fields",
+      "alwaysOutputData": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "Luciano Fernandez Muruaga's Space"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10007",
+          "mode": "list",
+          "cachedResultName": "Tarea"
+        },
+        "summary": "=[HIGH RISK] Security Review Required: '{{ $('Webhook').item.json.body.vendor_name }}'",
+        "additionalFields": {
+          "description": "=*Vendor:* {{ $('Webhook').item.json.body.vendor_name }}\n*Category:* {{ $('Webhook').item.json.body.category }}\n*Risk Tier:* {{ $json.risk_tier }}\n\n*AI Justification:*\n{{ $json.justification }}\n\n*Required Review Steps:*\n{{ $json.review_steps }}\n\n*Suggested Access Scope:*\n{{ $json.suggested_scope }}"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -208
+      ],
+      "id": "6a014231-f3c2-4ddf-a920-e9ce6dbd19ad",
+      "name": "Create High Risk Issue",
+      "retryOnFail": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "6MUCxjggPptaBZPi",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "Luciano Fernandez Muruaga's Space"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10007",
+          "mode": "list",
+          "cachedResultName": "Tarea"
+        },
+        "summary": "=[MEDIUM RISK] Compliance Review: {{ $('Webhook').item.json.body.vendor_name }}",
+        "additionalFields": {
+          "description": "=*Vendor:* {{ $('Webhook').item.json.body.vendor_name }}\n*Category:* {{ $('Webhook').item.json.body.category }}\n*Risk Tier:* {{ $json.risk_tier }}\n\n*Context for Compliance:*\nThis vendor has been flagged for a standard manual review based on the initial risk assessment.\n\n*AI Justification:*\n{{ $json.justification }}\n\n*Next Steps for Reviewer:*\n{{ $json.review_steps }}"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -32
+      ],
+      "id": "5c6cc1e6-7547-4ffb-8d89-df994c818377",
+      "name": "Create Middle Risk Issue",
+      "retryOnFail": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "6MUCxjggPptaBZPi",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AR57ETFJP",
+          "mode": "id"
+        },
+        "text": "=⚠️ *AUTOMATION ERROR: RISK ASSESSMENT FAILED* ⚠️\n\n*Incident Details:*\n• *Vendor:* {{ $node[\"Webhook\"].json.body.vendor_name }}\n• *Category:* {{ $node[\"Webhook\"].json.body.category }}\n• *Timestamp:* {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n*Description:* The automated risk analysis workflow was unable to determine a risk tier for this vendor. Manual intervention is required to classify this case.\n\n*Required Action:* Please review the raw input data in the Audit Log and process the onboarding manually.\n👉 <https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI/edit|Check this link to Audit Log>",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        688,
+        336
+      ],
+      "id": "1d341284-57e9-4a40-b016-7bfc81c067ae",
+      "name": "Notify Error",
+      "webhookId": "f8154ed8-aaa4-42a2-ae5c-2dac070b435e",
+      "retryOnFail": true,
+      "credentials": {
+        "slackApi": {
+          "id": "aFjnt0bkeTUviuot",
+          "name": "Slack Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Audit Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.format('MM/dd/yyyy HH:mm') }}",
+            "Vendor Name": "={{ $('Webhook').item.json.body.vendor_name }}",
+            "Risk Tier": "=Error",
+            "AI Reasoning Summary": "=-",
+            "Review Steps": "=-",
+            "Suggested Scope & Concerns": "=-",
+            "Actions Triggered": "Error Notification Sent via Slack",
+            "Jira Ticket": "-"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor Name",
+              "displayName": "Vendor Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Risk Tier",
+              "displayName": "Risk Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Reasoning Summary",
+              "displayName": "AI Reasoning Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Review Steps",
+              "displayName": "Review Steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suggested Scope & Concerns",
+              "displayName": "Suggested Scope & Concerns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actions Triggered",
+              "displayName": "Actions Triggered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jira Ticket",
+              "displayName": "Jira Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        336
+      ],
+      "id": "fe22a2bc-bb7d-4e4d-9b23-20a47d32a05c",
+      "name": "Complete Error Data",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5kb8LF0DrtGolMa8",
+          "name": "Google Sheets Luciano"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**Role:** You are a Senior Cybersecurity Risk Assessor at a Global Technology Infrastructure firm.\n**Task:** Analyze vendor intake data and provide a structured risk classification.\n\n**Operational Constraints (Groundedness Protocol):**\n1. **Input Validation (CRITICAL):** - If the Input Data contains only symbols (e.g., \".\"), placeholder text, or nonsensical strings, you MUST set \"risk_tier\": \"Error\".\n   - If BOTH 'Scope' and 'Value' are missing or labeled \"N/A\", you MUST set \"risk_tier\": \"Error\".\n   - In these cases, your justification must be: \"Incomplete or invalid data provided for assessment.\"\n   - This rule overrides all other classification logic.\n2. **Chain of Thought:** Before providing the final tier, mentally verify the classification logic. \n3. **No Assumptions:** Do not infer vendor security practices based on their name or category. Only use the 'Scope' and 'Value' fields.\n4. **Justification Structure:** Start the justification by listing the facts found, then the logic applied, and finally the conclusion. Be extremely concise. Use one short sentence for the fact and one for the conclusion. Total length must not exceed 40 words.\n\n**Classification Logic:**\n- HIGH: Contract > $50k OR Data Access involves 'PII', 'Database', 'Admin', 'Full', or 'Credentials'.\n- MEDIUM: Data access is 'Limited' or 'SaaS' with contract < $50k.\n- LOW: Public data only, no sensitive systems involved.\n\n**Input Data:**\n- Vendor: {{ $json.body.vendor_name }}\n- Category: {{ $json.body.category }}\n- Scope: {{ $json.body.data_access_scope }}\n- Value: {{ $json.body.estimated_contract_value }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -368,
+        0
+      ],
+      "id": "b5aa647a-2530-4bd5-a06d-7f66445e1207",
+      "name": "AI Decision",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "waitBetweenTries": 4000,
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Create High Risk Issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Middle Risk Issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Complete Low Risk Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Channel": {
+      "main": [
+        [
+          {
+            "node": "Complete High Risk Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complete Low Risk Data": {
+      "main": [
+        [
+          {
+            "node": "Complete Aut Approved Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complete Aut Approved Data": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Decision",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Decision",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set AI output fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create High Risk Issue": {
+      "main": [
+        [
+          {
+            "node": "Notify Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Middle Risk Issue": {
+      "main": [
+        [
+          {
+            "node": "Complete Medium Risk Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Error": {
+      "main": [
+        [
+          {
+            "node": "Complete Error Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Decision": {
+      "main": [
+        [
+          {
+            "node": "Set AI output fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ce5c3d72-0c0c-4c6d-b8aa-2032dde005c3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1060bdba94f52120387990a1285d58609f34fcda495eed9fc36145f752c9fff4"
+  },
+  "id": "g5Bq69vKpjGHBVQP",
+  "tags": []
+}
