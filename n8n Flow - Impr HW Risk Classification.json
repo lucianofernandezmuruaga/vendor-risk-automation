@@ -111,7 +111,7 @@
           "value": "C0AR57ETFJP",
           "mode": "id"
         },
-        "text": "=🚨 *HIGH RISK VENDOR DETECTED* 🚨\n\n*Vendor:* {{ $('Webhook').item.json.body.vendor_name }}\n*Tier:* {{ $('Switch').item.json.risk_tier.toUpperCase() }}\n\n*Action Required:* A manual security review is mandatory for this provider. \nPlease check the details in <https://lucianofernandezmuruaga.atlassian.net/browse/{{ $json.key }}|this ticket>.\n\n*Audit Trail:* If you want to see all requests, check <https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI|this link>.",
+        "text": "=🚨 *HIGH RISK VENDOR DETECTED* 🚨\n\n*Vendor:* {{ $('Webhook').item.json.body.vendor_name }}\n*Tier:* {{ $('Switch').item.json.risk_tier.toUpperCase() }}\n\n*Action Required:* A manual security review is mandatory for this provider. \nPlease check the details in <https://your-domain.atlassian.net/browse/{{ $json.key }}|this ticket>.\n\n*Audit Trail:* If you want to see all requests, check <https://docs.google.com/spreadsheets/d/1vNIYtfwQ0lM0GY5CK8WD6cBtYjUUzretaf1Jtt2j3aI|this link>.",
         "otherOptions": {}
       },
       "type": "n8n-nodes-base.slack",
@@ -156,7 +156,7 @@
             "Review Steps": "={{ $('Switch').item.json.review_steps }}",
             "Suggested Scope & Concerns": "={{ $('Switch').item.json.suggested_scope }} | Concerns: {{ $('Switch').item.json.concerns }}",
             "Actions Triggered": "Jira Ticket Created & Slack Alert Sent",
-            "Jira Ticket": "==HIPERVINCULO(\"https://lucianofernandezmuruaga.atlassian.net/browse/{{ $('Create High Risk Issue').item.json.key }}\"; \"Ticket Link\")"
+            "Jira Ticket": "==HIPERVINCULO(\"https://your-domain.atlassian.net/browse/{{ $('Create High Risk Issue').item.json.key }}\"; \"Ticket Link\")"
           },
           "matchingColumns": [],
           "schema": [
@@ -280,7 +280,7 @@
             "Review Steps": "={{ $('Switch').item.json.review_steps }}",
             "Suggested Scope & Concerns": "={{ $('Switch').item.json.suggested_scope }} | Concerns: {{ $('Switch').item.json.concerns }}",
             "Actions Triggered": "Pending Manual Review (Medium Risk)",
-            "Jira Ticket": "==HIPERVINCULO(\"https://lucianofernandezmuruaga.atlassian.net/browse/{{ $('Create Middle Risk Issue').item.json.key }}\"; \"Ticket Link\")"
+            "Jira Ticket": "==HIPERVINCULO(\"https://your-domain.atlassian.net/browse/{{ $('Create Middle Risk Issue').item.json.key }}\"; \"Ticket Link\")"
           },
           "matchingColumns": [],
           "schema": [
