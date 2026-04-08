@@ -25,4 +25,43 @@ This project automates the vendor intake process by utilizing Generative AI (Goo
 ## ⚙️ Setup & Installation
 1. Import the `.json` file from `/n8n-blueprints` into your n8n instance.
 2. Configure your credentials for Google Gemini, Jira, Slack, and Gmail.
-3. Use the provided Postman payloads in the documentation to trigger the Webhook.
+3. Use Postman payloads to trigger the Webhook.
+
+## 🧪 Testing the Workflow
+To trigger the automation, send a **POST** request to your n8n Webhook URL with the following JSON payloads:
+
+### Case 1: High Risk (Triggers Jira & Slack Alert)
+```json
+{
+  "vendor_name": "CloudCore Data Systems",
+  "vendor_email": "insert-gmail@gmail.com",
+  "category": "IT Infrastructure",
+  "data_access_scope": "Admin access to production database containing PII",
+  "estimated_contract_value": 75000,
+  "submitter_name": "Luciano Test"
+}
+```
+
+### Case 2: Low Risk (Triggers Gmail Approval & Audit Log)
+```json
+{
+  "vendor_name": "EcoLogistics Supplies",
+  "vendor_email": "insert-gmail@gmail.com",
+  "category": "Office Furniture",
+  "data_access_scope": "No access to sensitive data / Physical delivery only",
+  "estimated_contract_value": 5000,
+  "submitter_name": "Luciano Test"
+}
+```
+
+### Case 3: Error Handling (Triggers Slack Error Notification)
+```json
+{
+  "vendor_name": ".",
+  "vendor_email": "insert-gmail@gmail.com",
+  "category": ".",
+  "data_access_scope": ".",
+  "estimated_contract_value": ".",
+  "submitter_name": "."
+}
+```
