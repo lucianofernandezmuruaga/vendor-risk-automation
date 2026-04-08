@@ -22,8 +22,9 @@ A key pillar of this design is the handling of **malformed or "garbage" data** (
 ### **Traceability & Monitoring**
 To ensure 100% visibility for managers and security teams, the system implements:
 * **Slack Orchestration:** Real-time alerts including **hyperlinks** to Jira tickets and internal logs, allowing for immediate action from a mobile or desktop interface.
-* **Dual-Tab Logging (Google Sheets):** 1. **Audit Log:** A clean record of all successful classifications with direct links to Jira.
-    2. **Error Log:** A dedicated sheet for tracking failed inputs or system exceptions, ensuring no vendor request is ever lost.
+* **Dual-Tab Logging (Google Sheets):**
+    1. **Audit Log:** A comprehensive record of all processed requests, including detailed risk justifications and direct links to Jira tickets for High/Medium risks.
+    2. **Auto-Approved Vendors:** A dedicated sheet for tracking "Low Risk" vendors that cleared the automated vetting process, allowing for quick verification of frictionless on-boardings without manual intervention.
 
 ---
 
